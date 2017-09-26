@@ -18,5 +18,15 @@
     "overlay": "bin/overlay"
   },
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "chai": "^4.1.2",
+    "chai-fs": "^1.0.0",
+    "cwd": "^0.10.0",
+    "debug": "^3.1.0",
+    "fs-extra": "^4.0.2",
+    "minimist": "^1.2.0",
+    "tmp": "0.0.33",
+    "underscore": "^1.8.3"
+  }
 }

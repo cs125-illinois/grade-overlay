@@ -2,4 +2,46 @@
 
 'use strict'
 
+const debug = require('debug')('overlay'),
+      chai = require('chai'),
+      _ = require('underscore'),
+      cwd = require('cwd'),
+      tmp = require('tmp'),
+      fs = require('fs-extra'),
+      path = require('path');
+
+chai.use(require('chai-fs'));
+const expect = chai.expect;
+
+tmp.setGracefulCleanup();
+
+var paths = require('minimist')(process.argv.slice(2));
+var workingDirectory = tmp.dirSync().name;
+
+try {
+  paths.onto = paths._[0];
+  expect(paths.onto).to.be.a.directory().and.not.empty;
+  paths.onto = path.resolve(paths.onto);
+  if (!paths.from) {
+    paths.from = cwd();
+  }
+  expect(paths.from).to.be.a.directory().and.not.empty;
+  paths.from = path.resolve(paths.from);
+  if (!paths.into) {
+    paths.into = path.join(workingDirectory, "into");
+    fs.mkdir(paths.into);
+  }
+  expect(paths.into).to.be.a.directory().and.empty;
+  paths.into = path.resolve(paths.into);
+
+  expect(_.uniq([paths.onto, paths.from, paths.into])).to.have.lengthOf(3, "onto, from, and into paths should all be unique");
+} catch (err) {
+  console.log("Error: " + err.message);
+  console.log(`
+usage: overlay onto [--into=into] [--from=from]
+       onto: the directory to overlay from on to
+       from: the directory to overlay on top of onto (default: cwd)
+       into: where to put the results (default: temporary directory)`);
+}
+
 // vim: ts=2:sw=2:et:ft=javascript
