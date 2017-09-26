@@ -42,6 +42,7 @@ usage: overlay onto [--into=into] [--from=from]
        onto: the directory to overlay from on to
        from: the directory to overlay on top of onto (default: cwd)
        into: where to put the results (default: temporary directory)`);
+  console.log(workingDirectory);
 }
 
 // vim: ts=2:sw=2:et:ft=javascript
