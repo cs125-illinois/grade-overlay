@@ -2,18 +2,32 @@
 
 'use strict'
 
-const overlay = require('../lib/overlay.js');
+const _ = require('underscore'),
+      chai = require('chai'),
+      path = require('path'),
+      overlay = require('../lib/overlay.js');
+
+chai.use(require('chai-fs'));
+const expect = chai.expect;
 
 try {
-  const config = overlay.setConfig(require('minimist')(process.argv.slice(2)));
+  let argv = require('minimist')(process.argv.slice(2));
+
+  let configFile = path.resolve(argv._[0]);
+  expect(configFile).to.be.a.file().and.not.empty;
+
+  let onto = argv._[1];
+  expect(onto).to.be.a.directory().and.not.empty;
+
+  overlay(configFile).from(argv.from).into(argv.into).onto(onto);
 } catch (err) {
   console.log(err);
   console.log(`
-usage: overlay onto [--into=into] [--from=from]
-       onto: the directory to overlay from on to
-       from: the directory to overlay on top of onto (default: cwd)
-             from should contain a .overlay.yaml file that controls the overlay
-       into: where to put the results (default: temporary directory)`);
+usage: overlay configuration.yaml [--from=from] onto [--into=into]
+       configuration.yaml: overlay configuration file
+       from: override the directory to overlay from (default: from configuration.yaml)
+       onto: the directory to overlay onto
+       into: override where to put the results (default: temporary directory)`);
 }
 
 // vim: ts=2:sw=2:et:ft=javascript
