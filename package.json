@@ -28,6 +28,7 @@
     "fs-extra": "^4.0.2",
     "minimatch": "^3.0.4",
     "minimist": "^1.2.0",
+    "multimatch": "^2.1.0",
     "node-dir": "^0.1.17",
     "tmp": "0.0.33",
     "underscore": "^1.8.3",
