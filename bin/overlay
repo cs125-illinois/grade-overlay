@@ -5,6 +5,7 @@
 const _ = require('underscore'),
       chai = require('chai'),
       path = require('path'),
+      yamljs = require('yamljs'),
       overlay = require('../lib/overlay.js');
 
 chai.use(require('chai-fs'));
@@ -19,7 +20,15 @@ try {
   let onto = argv._[1];
   expect(onto).to.be.a.directory().and.not.empty;
 
-  overlay(configFile).from(argv.from).into(argv.into).onto(onto);
+  let context;
+  if (argv.context) {
+    context = yamljs.load(argv.context);
+  }
+  overlay(configFile)
+    .from(argv.from)
+    .into(argv.into)
+    .context(context)
+    .onto(onto);
 } catch (err) {
   console.log(err);
   console.log(`
