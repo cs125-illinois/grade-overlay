@@ -24,11 +24,14 @@ try {
   if (argv.context) {
     context = yamljs.load(argv.context);
   }
-  overlay(configFile)
+  let myOverlay = overlay(configFile)
     .from(argv.from)
     .into(argv.into)
     .context(context)
     .onto(onto);
+  myOverlay.then((into) => {
+    console.log(into);
+  });
 } catch (err) {
   console.log(err);
   console.log(`
