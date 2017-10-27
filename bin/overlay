@@ -2,6 +2,10 @@
 
 'use strict'
 
+if (require.main !== module) {
+  return;
+}
+
 const _ = require('underscore'),
       chai = require('chai'),
       path = require('path'),
