@@ -50,6 +50,8 @@ let gradeOverlay = configFile => {
     }
     return from;
   });
+  config.template = config.template || [];
+
   config.loaded = false;
   config.map = {};
 
