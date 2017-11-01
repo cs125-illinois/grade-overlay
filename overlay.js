@@ -67,6 +67,9 @@ let gradeOverlay = configFile => {
             }
             config.loaded = true;
           });
+        })
+        .then(() => {
+          return overlay;
         });
     },
     test: paths => {
