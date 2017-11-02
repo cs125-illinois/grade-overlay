@@ -13,8 +13,6 @@ const expect = require('chai').expect,
 
 'use strict'
 
-tmp.setGracefulCleanup();
-
 const globbyDefaults = {
   dot: true
 };
@@ -81,8 +79,12 @@ let gradeOverlay = configFile => {
         return (!(p in config.map));
       });
     },
-    onto: onto => {
+    overlay: (onto, context, into) => {
+      context = context || {};
+      expect(context).to.be.an('object');
+
       let patterns = _.union(config.onto, config.exclude.onto, config.exclude.both);
+      let map = _.clone(config.map);
       return Promise.resolve()
         .then(() => {
           if (!config.loaded) {
@@ -96,22 +98,22 @@ let gradeOverlay = configFile => {
           _.each(paths, p => {
             if (!p.endsWith("/")) {
               let dest = config.rename.onto[p] || p;
-              if (!(dest in config.map)) {
-                config.map[dest] = path.join(onto, p);
+              if (!(dest in map)) {
+                map[dest] = path.join(onto, p);
               }
             }
           });
         })
         .then(() => {
-          if (config.into) {
-            return fs.mkdirs(config.into);
+          if (into) {
+            return fs.mkdirs(into);
           } else {
-            return tmp.dir({ keep: true }).then(d => { config.into = d.path });
+            return tmp.dir({ keep: true }).then(d => { into = d.path });
           }
         })
         .then(() => {
-          return Promise.all(_.map(config.map, (from, to) => {
-            let dest = path.join(config.into, to);
+          return Promise.all(_.map(map, (from, to) => {
+            let dest = path.join(into, to);
             let stats;
             return fs.stat(from)
               .then(s => {
@@ -127,7 +129,7 @@ let gradeOverlay = configFile => {
                 }
                 return fs.readFile(dest)
                   .then((data) => {
-                    let contents = handlebars.compile(data.toString())(config.context);
+                    let contents = handlebars.compile(data.toString())(context);
                     return fs.writeFile(dest, contents);
                   });
               })
@@ -143,25 +145,12 @@ let gradeOverlay = configFile => {
           }));
         })
         .then(() => {
-          return config.into;
+          return into;
         })
         .catch((err) => {
           throw err;
         });
     },
-    into: into => {
-      if (into) {
-        config.into = into
-      }
-      return overlay;
-    },
-    context: context => {
-      if (context) {
-        expect(context).to.be.an('object');
-        config.context = context;
-      }
-      return overlay;
-    }
   }
   return overlay;
 }
@@ -180,7 +169,7 @@ try {
 
   let myOverlay = gradeOverlay(configFile).into(argv.into).context(context);
   myOverlay.load().then(() => {
-    return myOverlay.onto(onto);
+    return myOverlay.overlay(into, context, onto);
   }).then((into) => {
     console.log(into);
   });
