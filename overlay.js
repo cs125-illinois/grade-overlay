@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+'use strict'
+
 const expect = require('chai').expect,
       tmp = require('tmp-promise'),
       path = require('path'),
@@ -12,7 +14,7 @@ const expect = require('chai').expect,
       globby = require('globby'),
       childProcess = require('child-process-promise');
 
-'use strict'
+tmp.setGracefulCleanup();
 
 const globbyDefaults = {
   dot: true
