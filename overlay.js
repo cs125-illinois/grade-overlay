@@ -167,11 +167,11 @@ let gradeOverlay = configFile => {
         .then(() => {
           return {
             into: into,
-            clobbered: (_(clobbered).pickBy(info => {
+            clobbered: (_(clobbered).values().filter(info => {
               return !info.same
             }).each(info => {
               delete info.same
-            }).values())
+            }))
           };
         })
         .catch(err => {
