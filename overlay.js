@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+'use strict'
+
 const expect = require('chai').expect,
       tmp = require('tmp-promise'),
       path = require('path'),
@@ -11,7 +13,7 @@ const expect = require('chai').expect,
       handlebars = require('handlebars'),
       globby = require('globby');
 
-'use strict'
+tmp.setGracefulCleanup();
 
 const globbyDefaults = {
   dot: true
