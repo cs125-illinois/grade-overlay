@@ -106,6 +106,7 @@ let gradeOverlay = configFile => {
                 map[dest] = path.join(onto, p);
               } else {
                 clobbered[dest] = {
+                  dest: dest,
                   from: map[dest],
                   onto: path.join(onto, p),
                   same: false
@@ -172,7 +173,7 @@ let gradeOverlay = configFile => {
               return !info.same
             }).each(info => {
               delete info.same
-            }))
+            }).values())
           };
         })
         .catch(err => {
