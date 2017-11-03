@@ -11,7 +11,8 @@ const expect = require('chai').expect,
       multimatch = require('multimatch'),
       fs = require('fs-extra'),
       handlebars = require('handlebars'),
-      globby = require('globby');
+      globby = require('globby'),
+      childProcess = require('child-process-promise');
 
 tmp.setGracefulCleanup();
 
@@ -87,6 +88,7 @@ let gradeOverlay = configFile => {
 
       let patterns = _.union(config.onto, config.exclude.onto, config.exclude.both);
       let map = _.clone(config.map);
+      let clobbered = {};
       return Promise.resolve()
         .then(() => {
           if (!config.loaded) {
@@ -102,6 +104,12 @@ let gradeOverlay = configFile => {
               let dest = config.rename.onto[p] || p;
               if (!(dest in map)) {
                 map[dest] = path.join(onto, p);
+              } else {
+                clobbered[dest] = {
+                  from: map[dest],
+                  onto: path.join(onto, p),
+                  same: false
+                };
               }
             }
           });
@@ -110,7 +118,7 @@ let gradeOverlay = configFile => {
           if (into) {
             return fs.mkdirs(into);
           } else {
-            return tmp.dir({ keep: true }).then(d => { into = d.path });
+            return tmp.dir({ keep: true, prefix: "overlay-" }).then(d => { into = d.path });
           }
         })
         .then(() => {
@@ -147,9 +155,27 @@ let gradeOverlay = configFile => {
           }));
         })
         .then(() => {
-          return into;
+          return Promise.all(_.map(clobbered, (info, dest) => {
+            return childProcess.exec(`diff ${info.from} ${info.onto}`, {
+                stdio: ['ignore', 'ignore', 'ignore']
+              })
+              .then(() => {
+                info.same = true;
+              })
+              .catch(() => { });
+          }));
         })
-        .catch((err) => {
+        .then(() => {
+          return {
+            into: into,
+            clobbered: (_(clobbered).pickBy(info => {
+              return !info.same
+            }).each(info => {
+              delete info.same
+            }))
+          };
+        })
+        .catch(err => {
           throw err;
         });
     },
@@ -169,11 +195,13 @@ try {
   let onto = path.resolve(argv._[1]);
   let context = argv.context ? yamljs.load(argv.context) : undefined;
 
-  let myOverlay = gradeOverlay(configFile).into(argv.into).context(context);
+  let myOverlay = gradeOverlay(configFile);
   myOverlay.load().then(() => {
-    return myOverlay.overlay(into, context, onto);
-  }).then((into) => {
-    console.log(into);
+    return myOverlay.overlay(onto, context, argv.into);
+  }).then(result => {
+    console.log(JSON.stringify(result, null, 2));
+  }).catch(err => {
+    throw err;
   });
 } catch (err) {
   console.log(err);
